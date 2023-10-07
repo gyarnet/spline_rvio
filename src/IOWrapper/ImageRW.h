@@ -39,5 +39,5 @@ void writeImage(std::string filename, MinimalImageB3 *img);
 void writeImage(std::string filename, MinimalImageF *img);
 void writeImage(std::string filename, MinimalImageF3 *img);
 
-} // namespace IOWrap
-} // namespace dso
+}  // namespace IOWrap
+}  // namespace dso

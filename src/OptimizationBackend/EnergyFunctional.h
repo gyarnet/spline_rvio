@@ -23,11 +23,12 @@
 
 #pragma once
 
+#include <math.h>
+
 #include "map"
 #include "util/IndexThreadReduce.h"
 #include "util/NumType.h"
 #include "vector"
-#include <math.h>
 
 namespace dso {
 
@@ -50,110 +51,103 @@ extern bool EFIndicesValid;
 extern bool EFDeltaValid;
 
 class EnergyFunctional {
-public:
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
-  friend class EFFrame;
-  friend class EFPoint;
-  friend class EFResidual;
-  friend class AccumulatedTopHessian;
-  friend class AccumulatedTopHessianSSE;
-  friend class AccumulatedSCHessian;
-  friend class AccumulatedSCHessianSSE;
+   public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW;
+    friend class EFFrame;
+    friend class EFPoint;
+    friend class EFResidual;
+    friend class AccumulatedTopHessian;
+    friend class AccumulatedTopHessianSSE;
+    friend class AccumulatedSCHessian;
+    friend class AccumulatedSCHessianSSE;
 
-  EnergyFunctional();
-  ~EnergyFunctional();
+    EnergyFunctional();
+    ~EnergyFunctional();
 
-  EFResidual *insertResidual(PointFrameResidual *r);
-  EFFrame *insertFrame(FrameHessian *fh, CalibHessian *HCalib);
-  EFPoint *insertPoint(PointHessian *ph);
+    EFResidual *insertResidual(PointFrameResidual *r);
+    EFFrame *insertFrame(FrameHessian *fh, CalibHessian *HCalib);
+    EFPoint *insertPoint(PointHessian *ph);
 
-  void dropResidual(EFResidual *r);
-  void marginalizeFrame(EFFrame *fh, CalibHessian *HCalib);
-  void removePoint(EFPoint *ph);
+    void dropResidual(EFResidual *r);
+    void marginalizeFrame(EFFrame *fh, CalibHessian *HCalib);
+    void removePoint(EFPoint *ph);
 
-  void marginalizePointsF();
-  void dropPointsF();
-  void solveSystemF(int iteration, double lambda, CalibHessian *HCalib);
-  double calcMEnergyF();
-  double calcLEnergyF_MT();
+    void marginalizePointsF();
+    void dropPointsF();
+    void solveSystemF(int iteration, double lambda, CalibHessian *HCalib);
+    double calcMEnergyF();
+    double calcLEnergyF_MT();
 
-  void makeIDX();
+    void makeIDX();
 
-  void setDeltaF(CalibHessian *HCalib);
+    void setDeltaF(CalibHessian *HCalib);
 
-  void setAdjointsF(CalibHessian *HCalib);
+    void setAdjointsF(CalibHessian *HCalib);
 
-  std::vector<EFFrame *> frames;
-  int nPoints, nFrames, nResiduals;
+    std::vector<EFFrame *> frames;
+    int nPoints, nFrames, nResiduals;
 
-  int resInA, resInL, resInM;
-  VecX lastX;
-  std::vector<VecX> lastNullspaces_forLogging;
-  std::vector<VecX> lastNullspaces_pose;
-  std::vector<VecX> lastNullspaces_scale;
-  std::vector<VecX> lastNullspaces_affA;
-  std::vector<VecX> lastNullspaces_affB;
+    int resInA, resInL, resInM;
+    VecX lastX;
+    std::vector<VecX> lastNullspaces_forLogging;
+    std::vector<VecX> lastNullspaces_pose;
+    std::vector<VecX> lastNullspaces_scale;
+    std::vector<VecX> lastNullspaces_affA;
+    std::vector<VecX> lastNullspaces_affB;
 
-  IndexThreadReduce<Vec10> *red;
+    IndexThreadReduce<Vec10> *red;
 
-  std::map<uint64_t, Eigen::Vector2i, std::less<uint64_t>,
-           Eigen::aligned_allocator<std::pair<const uint64_t, Eigen::Vector2i>>>
-      connectivityMap;
+    std::map<uint64_t, Eigen::Vector2i, std::less<uint64_t>, Eigen::aligned_allocator<std::pair<const uint64_t, Eigen::Vector2i>>> connectivityMap;
 
-  // ToDo: move to private
-  void getImuHessian(MatXX &H, VecX &b, MatXX &J_cst, VecX &r_cst,
-                     CalibHessian *HCalib, std::vector<bool> &is_spline_valid,
-                     bool print = false);
+    // ToDo: move to private
+    void getImuHessian(MatXX &H, VecX &b, MatXX &J_cst, VecX &r_cst, CalibHessian *HCalib, std::vector<bool> &is_spline_valid, bool print = false);
 
-private:
-  VecX getStitchedDeltaF() const;
+   private:
+    VecX getStitchedDeltaF() const;
 
-  void resubstituteF_MT(VecX x, CalibHessian *HCalib, bool MT);
-  void resubstituteFPt(const VecCf &xc, Mat18f *xAd, int min, int max,
-                       Vec10 *stats, int tid);
+    void resubstituteF_MT(VecX x, CalibHessian *HCalib, bool MT);
+    void resubstituteFPt(const VecCf &xc, Mat18f *xAd, int min, int max, Vec10 *stats, int tid);
 
-  void accumulateAF_MT(MatXX &H, VecX &b, bool MT);
-  void accumulateLF_MT(MatXX &H, VecX &b, bool MT);
-  void accumulateSCF_MT(MatXX &H, VecX &b, bool MT);
+    void accumulateAF_MT(MatXX &H, VecX &b, bool MT);
+    void accumulateLF_MT(MatXX &H, VecX &b, bool MT);
+    void accumulateSCF_MT(MatXX &H, VecX &b, bool MT);
 
-  void expandHbtoFitImu(MatXX &H, VecX &b);
+    void expandHbtoFitImu(MatXX &H, VecX &b);
 
-  void getImuHessianCurrentFrame(int fi, CalibHessian *HCalib, MatXX &H,
-                                 VecX &b, bool &spline_valid, MatXX &J_vr,
-                                 VecX &r_vr, bool print);
+    void getImuHessianCurrentFrame(int fi, CalibHessian *HCalib, MatXX &H, VecX &b, bool &spline_valid, MatXX &J_vr, VecX &r_vr, bool print);
 
-  void calcLEnergyPt(int min, int max, Vec10 *stats, int tid);
+    void calcLEnergyPt(int min, int max, Vec10 *stats, int tid);
 
-  void orthogonalize(VecX *b, MatXX *H);
-  Mat18f *adHTdeltaF;
+    void orthogonalize(VecX *b, MatXX *H);
+    Mat18f *adHTdeltaF;
 
-  Mat88 *adHost;
-  Mat88 *adTarget;
+    Mat88 *adHost;
+    Mat88 *adTarget;
 
-  Mat88f *adHostF;
-  Mat88f *adTargetF;
+    Mat88f *adHostF;
+    Mat88f *adTargetF;
 
-  VecC cPrior;
-  VecCf cDeltaF;
-  VecCf cPriorF;
+    VecC cPrior;
+    VecCf cDeltaF;
+    VecCf cPriorF;
 
-  MatXX HM;
-  VecX bM;
+    MatXX HM;
+    VecX bM;
 
-  MatXX HM_bias;
-  VecX bM_bias;
+    MatXX HM_bias;
+    VecX bM_bias;
 
-  MatXX HM_imu;
-  VecX bM_imu;
+    MatXX HM_imu;
+    VecX bM_imu;
 
-  AccumulatedTopHessianSSE *accSSE_top_L;
-  AccumulatedTopHessianSSE *accSSE_top_A;
+    AccumulatedTopHessianSSE *accSSE_top_L;
+    AccumulatedTopHessianSSE *accSSE_top_A;
 
-  AccumulatedSCHessianSSE *accSSE_bot;
+    AccumulatedSCHessianSSE *accSSE_bot;
 
-  std::vector<EFPoint *> allPoints;
-  std::vector<EFPoint *> allPointsToMarg;
+    std::vector<EFPoint *> allPoints;
+    std::vector<EFPoint *> allPointsToMarg;
 
-  float currentLambda;
+    float currentLambda;
 };
-} // namespace dso
+}  // namespace dso
