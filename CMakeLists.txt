@@ -1,7 +1,8 @@
 PROJECT(spline_vio)
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8.3)
 
-set(BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 find_package(SuiteParse REQUIRED)
@@ -21,9 +22,6 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package()
 
 add_definitions("-DENABLE_SSE")
-set(CMAKE_CXX_FLAGS
-	"${SSE_FLAGS} -O3 -g -std=c++0x -march=native"
-)
 
 include_directories(
 	src

@@ -95,10 +95,8 @@ class Undistort {
     float *remapY;
 
     void applyBlurNoise(float *img) const;
-
     void makeOptimalK_crop();
     void makeOptimalK_full();
-
     void readFromFile(const char *configFileName, int nPars, std::string prefix = "");
 };
 

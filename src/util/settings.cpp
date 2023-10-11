@@ -30,8 +30,6 @@ int pyrLevelsUsed = PYR_LEVELS;
 
 /* Parameters controlling when KF's are taken */
 float setting_keyframesPerSecond = 0;  // if !=0, takes a fixed number of KF per second.
-bool setting_realTimeMaxKF = false;    // if true, takes as many KF's as possible (will break the system if
-                                       // the camera stays stationary)
 float setting_maxShiftWeightT = 0.04f * (640 + 480);
 float setting_maxShiftWeightR = 0.0f * (640 + 480);
 float setting_maxShiftWeightRT = 0.02f * (640 + 480);
@@ -128,7 +126,7 @@ float setting_trace_slackInterval = 1.5;       // if pixel-interval is smaller t
 float setting_trace_minImprovementFactor = 2;  // if pixel-interval is smaller than this, leave it be.
 
 // for benchmarking different undistortion settings
-float benchmarkSetting_fxfyfac = 0;
+
 int benchmarkSetting_width = 0;
 int benchmarkSetting_height = 0;
 float benchmark_varNoise = 0;

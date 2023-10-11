@@ -78,7 +78,7 @@ void VioNode::settingsDefault(int preset, int mode) {
         setting_minFrames = 5;
         setting_maxFrames = 7;
         setting_maxOptIterations = 6;
-        setting_minOptIterations = 1;
+        setting_minOptIterations = 6;
     }
 
     if (preset == 2) {
@@ -96,8 +96,6 @@ void VioNode::settingsDefault(int preset, int mode) {
         setting_maxOptIterations = 4;
         setting_minOptIterations = 1;
 
-        benchmarkSetting_width = 424;
-        benchmarkSetting_height = 320;
     }
 
     if (mode == 0) {
@@ -122,20 +120,16 @@ void VioNode::settingsDefault(int preset, int mode) {
     isLost = false;
 }
 
-VioNode::VioNode(int start_frame, double td_cam_imu, const std::string &calib, const std::string &vignette, const std::string &gamma, bool nomt, int preset,
-                 int mode)
+VioNode::VioNode(int start_frame, double td_cam_imu, const std::string &calib, const std::string &vignette, const std::string &gamma, bool nomt, int preset,int mode)
     : start_frame_(start_frame), td_cam_imu_(td_cam_imu) {
     // DSO front end
     settingsDefault(preset, mode);
-
     multiThreading = !nomt;
-
     undistorter_ = Undistort::getUndistorterForFile(calib, gamma, vignette);
-
     setGlobalCalib((int)undistorter_->getSize()[0], (int)undistorter_->getSize()[1], undistorter_->getK().cast<float>());
-
     full_system_ = new FullSystem();
-    if (undistorter_->photometricUndist != 0) full_system_->setGammaFunction(undistorter_->photometricUndist->getG());
+    if (undistorter_->photometricUndist != 0)
+        full_system_->setGammaFunction(undistorter_->photometricUndist->getG());
 
     if (!disableAllDisplay) {
         IOWrap::PangolinDSOViewer *viewer = new IOWrap::PangolinDSOViewer(wG[0], hG[0], true);

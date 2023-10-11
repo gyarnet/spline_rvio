@@ -620,18 +620,17 @@ void Undistort::readFromFile(const char *configFileName, int nPars, std::string 
 
         if (std::sscanf(l1.c_str(), buf, &parsOrg[0], &parsOrg[1], &parsOrg[2], &parsOrg[3], &parsOrg[4]) == 5 &&
             std::sscanf(l2.c_str(), "%d %d", &wOrg, &hOrg) == 2) {
+
             printf("Input resolution: %d %d\n", wOrg, hOrg);
             printf("In: %f %f %f %f %f\n", parsOrg[0], parsOrg[1], parsOrg[2], parsOrg[3], parsOrg[4]);
+
         } else {
-            printf(
-                "Failed to read camera calibration (invalid format?)\nCalibration "
-                "file: %s\n",
-                configFileName);
+            printf("Failed to read camera calibration (invalid format?)\nCalibration file: %s\n",configFileName);
             infile.close();
             return;
         }
-    } else if (nPars == 8)  // KB, equi & radtan model
-    {
+    } else if (nPars == 8){
+        // KB, equi & radtan model
         char buf[1000];
         snprintf(buf, 1000, "%s%%lf %%lf %%lf %%lf %%lf %%lf %%lf %%lf %%lf %%lf", prefix.c_str());
 
@@ -649,20 +648,20 @@ void Undistort::readFromFile(const char *configFileName, int nPars, std::string 
             return;
         }
     } else {
-        printf(
-            "called with invalid number of parameters.... forgot to implement "
-            "me?\n");
+        printf("called with invalid number of parameters.... forgot to implement me?\n");
         infile.close();
         return;
     }
 
+    // 相对内参
     if (parsOrg[2] < 1 && parsOrg[3] < 1) {
         printf(
-            "\n\nFound fx=%f, fy=%f, cx=%f, cy=%f.\n I'm assuming this is the "
+            "Found fx=%f, fy=%f, cx=%f, cy=%f.\n I'm assuming this is the "
             "\"relative\" calibration file format,"
             "and will rescale this by image width / height to fx=%f, fy=%f, "
             "cx=%f, cy=%f.\n\n",
-            parsOrg[0], parsOrg[1], parsOrg[2], parsOrg[3], parsOrg[0] * wOrg, parsOrg[1] * hOrg, parsOrg[2] * wOrg - 0.5, parsOrg[3] * hOrg - 0.5);
+            parsOrg[0], parsOrg[1], parsOrg[2], parsOrg[3],
+            parsOrg[0] * wOrg, parsOrg[1] * hOrg, parsOrg[2] * wOrg - 0.5, parsOrg[3] * hOrg - 0.5);
 
         // rescale and substract 0.5 offset.
         // the 0.5 is because I'm assuming the calibration is given such that the
@@ -683,14 +682,7 @@ void Undistort::readFromFile(const char *configFileName, int nPars, std::string 
     } else if (l3 == "full") {
         outputCalibration[0] = -2;
         printf("Out: Rectify Full\n");
-    } else if (l3 == "none") {
-        outputCalibration[0] = -3;
-        printf("Out: No Rectification\n");
-    } else if (std::sscanf(l3.c_str(), "%f %f %f %f %f", &outputCalibration[0], &outputCalibration[1], &outputCalibration[2], &outputCalibration[3],
-                           &outputCalibration[4]) == 5) {
-        printf("Out: %f %f %f %f %f\n", outputCalibration[0], outputCalibration[1], outputCalibration[2], outputCalibration[3], outputCalibration[4]);
-
-    } else {
+    }  else {
         printf("Out: Failed to Read Output pars... not rectifying.\n");
         infile.close();
         return;
@@ -698,71 +690,26 @@ void Undistort::readFromFile(const char *configFileName, int nPars, std::string 
 
     // l4
     if (std::sscanf(l4.c_str(), "%d %d", &w, &h) == 2) {
-        if (benchmarkSetting_width != 0) {
-            w = benchmarkSetting_width;
-            if (outputCalibration[0] == -3) outputCalibration[0] = -1;  // crop instead of none, since probably resolution changed.
-        }
-        if (benchmarkSetting_height != 0) {
-            h = benchmarkSetting_height;
-            if (outputCalibration[0] == -3) outputCalibration[0] = -1;  // crop instead of none, since probably resolution changed.
-        }
 
-        printf("Output resolution: %d %d\n", w, h);
-    } else {
-        printf("Out: Failed to Read Output resolution... not rectifying.\n");
-        valid = false;
     }
 
     remapX = new float[w * h];
     remapY = new float[w * h];
 
     if (outputCalibration[0] == -1)
-        makeOptimalK_crop();
+        makeOptimalK_crop(); // crop
     else if (outputCalibration[0] == -2)
-        makeOptimalK_full();
-    else if (outputCalibration[0] == -3) {
-        if (w != wOrg || h != hOrg) {
-            printf(
-                "ERROR: rectification mode none requires input and output "
-                "dimenstions to match!\n\n");
-            exit(1);
-        }
-        K.setIdentity();
-        K(0, 0) = parsOrg[0];
-        K(1, 1) = parsOrg[1];
-        K(0, 2) = parsOrg[2];
-        K(1, 2) = parsOrg[3];
-        passthrough = true;
-    } else {
-        if (outputCalibration[2] > 1 || outputCalibration[3] > 1) {
-            printf(
-                "\n\n\nWARNING: given output calibration (%f %f %f %f) seems "
-                "wrong. It needs to be relative to image width / height!\n\n\n",
-                outputCalibration[0], outputCalibration[1], outputCalibration[2], outputCalibration[3]);
-        }
+        makeOptimalK_full(); // full
 
-        K.setIdentity();
-        K(0, 0) = outputCalibration[0] * w;
-        K(1, 1) = outputCalibration[1] * h;
-        K(0, 2) = outputCalibration[2] * w - 0.5;
-        K(1, 2) = outputCalibration[3] * h - 0.5;
-    }
-
-    if (benchmarkSetting_fxfyfac != 0) {
-        K(0, 0) = fmax(benchmarkSetting_fxfyfac, (float)K(0, 0));
-        K(1, 1) = fmax(benchmarkSetting_fxfyfac, (float)K(1, 1));
-        passthrough = false;  // cannot pass through when fx / fy have been overwritten.
-    }
-
-    for (int y = 0; y < h; y++)
+    for (int y = 0; y < h; y++) {
         for (int x = 0; x < w; x++) {
             remapX[x + y * w] = x;
             remapY[x + y * w] = y;
         }
-
+    }
     distortCoordinates(remapX, remapY, remapX, remapY, h * w);
 
-    for (int y = 0; y < h; y++)
+    for (int y = 0; y < h; y++) {
         for (int x = 0; x < w; x++) {
             // make rounding resistant.
             float ix = remapX[x + y * w];
@@ -781,6 +728,7 @@ void Undistort::readFromFile(const char *configFileName, int nPars, std::string 
                 remapY[x + y * w] = -1;
             }
         }
+    }
 
     valid = true;
 
