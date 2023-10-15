@@ -363,37 +363,39 @@ void EnergyFunctional::getImuHessianCurrentFrame(int fi, CalibHessian *HCalib, M
                 b.segment<29>(cur_idx) += JfTW * r_imu;
             }
 
-            if (print) {
-                imu_pred_ave += imu_pred;
-                imu_meas_ave += imu_meas;
-                count++;
-                if (count >= (imu_size / 5) || j == (imu_size - 1)) {
-                    imu_pred_ave /= count;
-                    imu_meas_ave /= count;
-                    printf(
-                        "imu (%5.2f): %5.2f (%5.2f) %6.2f (%6.2f) %5.2f (%5.2f) %5.2f "
-                        "(%5.2f) %5.2f (%5.2f) %5.2f (%5.2f) \n",
-                        tt, imu_pred_ave[0], imu_meas_ave[0], imu_pred_ave[1], imu_meas_ave[1], imu_pred_ave[2], imu_meas_ave[2], imu_pred_ave[3],
-                        imu_meas_ave[3], imu_pred_ave[4], imu_meas_ave[4], imu_pred_ave[5], imu_meas_ave[5]);
-                    imu_pred_ave.setZero();
-                    imu_meas_ave.setZero();
-                    count = 0;
-                }
+            imu_pred_ave += imu_pred;
+            imu_meas_ave += imu_meas;
+            count++;
+            if (count >= (imu_size / 5) || j == (imu_size - 1)) {
+                imu_pred_ave /= count;
+                imu_meas_ave /= count;
+                printf(
+                    "imu (%5.2f): %5.2f (%5.2f) %6.2f (%6.2f) %5.2f (%5.2f) %5.2f "
+                    "(%5.2f) %5.2f (%5.2f) %5.2f (%5.2f) \n",
+                    tt,
+                    imu_pred_ave[0], imu_meas_ave[0],
+                    imu_pred_ave[1], imu_meas_ave[1],
+                    imu_pred_ave[2], imu_meas_ave[2],
+                    imu_pred_ave[3], imu_meas_ave[3],
+                    imu_pred_ave[4], imu_meas_ave[4],
+                    imu_pred_ave[5], imu_meas_ave[5]);
+                imu_pred_ave.setZero();
+                imu_meas_ave.setZero();
+                count = 0;
             }
         }
     }
-    if (print) {
-        printf("id: %d ba: %5.2f %5.2f %5.2f bg: %5.2f %5.2f %5.2f ", cur_fh->frameID, cur_fh->imu_bias[0], cur_fh->imu_bias[1], cur_fh->imu_bias[2],
-               cur_fh->imu_bias[3], cur_fh->imu_bias[4], cur_fh->imu_bias[5]);
-        if (spline_valid) {
-            if (vel_valid) {
-                printf("r_rv: %.0e %.0e\n", r_cst.head(3).norm(), r_cst.tail(3).norm());
-            } else {
-                printf("r_r:  %.0e\n", r_cst.norm());
-            }
+
+    printf("id: %d ba: %5.2f %5.2f %5.2f bg: %5.2f %5.2f %5.2f ", cur_fh->frameID, cur_fh->imu_bias[0], cur_fh->imu_bias[1], cur_fh->imu_bias[2],
+           cur_fh->imu_bias[3], cur_fh->imu_bias[4], cur_fh->imu_bias[5]);
+    if (spline_valid) {
+        if (vel_valid) {
+            printf("r_rv: %.0e %.0e\n", r_cst.head(3).norm(), r_cst.tail(3).norm());
         } else {
-            printf("\n");
+            printf("r_r:  %.0e\n", r_cst.norm());
         }
+    } else {
+        printf("\n");
     }
 }
 

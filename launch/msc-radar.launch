@@ -1,0 +1,16 @@
+<launch>
+  <rosparam command="load" file="$(find spline_vio)/calibs/MSC-Radar/calib.yaml" ns="spline_vio"/>
+
+  <node name="spline_vio" pkg="spline_vio" type="spline_vio_node" output="screen" required="true">
+    <param name="imu_topic" value="/imu/data" />
+    <param name="cam_topic" value="/camera_array/left/image_raw" />
+    <param name="calib" value="$(find spline_vio)/calibs/MSC-Radar/camera0.txt" />
+    <param name="gamma" value="$(find spline_vio)/calibs/MSC-Radar/pcalib0.txt" />
+    <param name="mode" value="0" />
+    <param name="bag" value="" />
+    <param name="start_frame" value="0" />
+    <param name="results" value="/tmp/results.txt" />
+    <!-- <param name="nogui" value="true" /> -->
+    <param name="weight_imu_dso" value="0.1" />
+  </node>
+  </launch>
