@@ -1,5 +1,7 @@
 <launch>
   <rosparam command="load" file="$(find spline_vio)/calibs/RTVI/calib.yaml" ns="spline_vio"/>
+  <arg name="bag" default="/home/gyarnet/slam/data/RTVI/gym.bag" />
+  <arg name="results" default="/tmp/gym_results.txt"/>
 
   <node name="spline_vio" pkg="spline_vio" type="spline_vio_node" output="screen" required="true">
     <param name="imu_topic" value="/sensor_platform/imu" />
@@ -7,9 +9,9 @@
     <param name="calib" value="$(find spline_vio)/calibs/RTVI/camera0.txt" />
     <param name="gamma" value="$(find spline_vio)/calibs/RTVI/pcalib0.txt" />
     <param name="mode" value="0" />
-    <param name="bag" value="" />
-    <param name="start_frame" value="0" />
-    <param name="results" value="/tmp/results.txt" />
+    <param name="bag" value="$(arg bag)" />
+    <param name="start_frame" value="550" />
+    <param name="results" value="$(arg results)" />
     <!-- <param name="nogui" value="true" /> -->
     <param name="weight_imu_dso" value="0.1" />
   </node>

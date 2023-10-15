@@ -313,13 +313,11 @@ int main(int argc, char **argv) {
         bag.close();
     } else {
         ros::NodeHandle nh;
-
         // ROS subscribe to imu data
         ros::Subscriber imu_sub = nh.subscribe(imu_topic, 10000, &VioNode::imuMessageCallback, &vio_node);
 
         // ROS subscribe to images
         ros::Subscriber img_sub = nh.subscribe(cam_topic, 10000, &VioNode::imageMessageCallback, &vio_node);
-
         ros::spin();
     }
 

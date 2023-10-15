@@ -157,8 +157,13 @@ void FullSystem::printResult(std::string file) {
             s->camToWorld = s->trackingRef->camToWorld * s->camToTrackingRef;
         }
 
-        myfile << s->timestamp << " " << s->camToWorld.translation().transpose() << " " << s->camToWorld.so3().unit_quaternion().x() << " "
-               << s->camToWorld.so3().unit_quaternion().y() << " " << s->camToWorld.so3().unit_quaternion().z() << " "
+        myfile << s->timestamp << " "
+               << s->camToWorld.translation()(0) << " "
+               << s->camToWorld.translation()(1) << " "
+               << s->camToWorld.translation()(2) << " "
+               << s->camToWorld.so3().unit_quaternion().x() << " "
+               << s->camToWorld.so3().unit_quaternion().y() << " "
+               << s->camToWorld.so3().unit_quaternion().z() << " "
                << s->camToWorld.so3().unit_quaternion().w() << "\n";
     }
     myfile.close();
